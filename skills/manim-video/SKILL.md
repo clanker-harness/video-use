@@ -111,7 +111,7 @@ project-name/
 **Use monospace fonts for all text.** Manim's Pango renderer produces broken kerning with proportional fonts at all sizes. See `references/visual-design.md` for full recommendations.
 
 ```python
-MONO = "Menlo"  # define once at top of file
+MONO = "Menlo" if sys.platform == "darwin" else "DejaVu Sans Mono"  # define once at top of file (import sys)
 
 Text("Fourier Series", font_size=48, font=MONO, weight=BOLD)  # titles
 Text("n=1: sin(x)", font_size=20, font=MONO)                  # labels

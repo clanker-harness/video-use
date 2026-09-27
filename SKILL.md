@@ -69,6 +69,19 @@ First-time install lives in `install.md` (clone, deps, ffmpeg, skill registratio
 
 Helpers (`helpers/transcribe.py`, `helpers/render.py`, etc.) live alongside this SKILL.md. Resolve their paths relative to the directory containing this file — the skill is typically symlinked at `~/.claude/skills/video-use/` or `~/.codex/skills/video-use/`.
 
+## Platform notes
+
+| | macOS | Linux (Debian/Ubuntu) |
+|---|---|---|
+| ffmpeg | `brew install ffmpeg` (or `ffmpeg-full` if `subtitles` filter is missing) | `sudo apt-get install ffmpeg` — includes `subtitles` (libass), `zscale`, `loudnorm` |
+| Monospace font (PIL) | Menlo Bold `/System/Library/Fonts/Menlo.ttc` (index 1) | DejaVu Sans Mono Bold `/usr/share/fonts/truetype/dejavu/DejaVuSansMono-Bold.ttf` (single face, no index); else `fc-match -f '%{file}' 'monospace:bold'` |
+| libass captions (`FontName=Helvetica`) | Helvetica | fontconfig substitutes Nimbus Sans Bold (Helvetica clone) — no change needed |
+| Open a render | `open final.mp4` | `xdg-open final.mp4` |
+
+`timeline_view.py` picks Menlo → DejaVu Sans Mono → `fc-match monospace` automatically. Pass an explicit font path in PIL overlay code (and in sub-agent briefs) for the OS you're on — `"Menlo"` by name does not resolve to a monospace face on Linux (fontconfig maps it to Noto Sans).
+
+Last verified on Linux: ws (Ubuntu 24.04, apt ffmpeg 6.1.1) 2026-09-26 — `render.py --draft` (2 segments, `warm_cinematic` grade, PIL overlay in DejaVu Sans Mono Bold, SRT captions, loudnorm) and `timeline_view.py`. Transcription (ElevenLabs) not exercised.
+
 ## Helpers
 
 - **`transcribe.py <video>`** — single-file Scribe call. `--num-speakers N` optional. Cached.
@@ -185,7 +198,7 @@ Subtitles have three dimensions worth reasoning about: **chunking** (1/2/3/sente
 
 **Worked styles** — pick, adapt, or invent:
 
-**`bold-overlay`** — short-form tech launch, fast-paced social. ~2-word chunks, UPPERCASE, break on punctuation and pauses ≥ 0.3s, grow to 3 words rather than flash a cue < 0.35s (`chunk_words` in `render.py`), Helvetica 18 Bold, white-on-outline, `MarginV=35`. `render.py` ships with this as `SUB_FORCE_STYLE`.
+**`bold-overlay`** — short-form tech launch, fast-paced social. ~2-word chunks, UPPERCASE, break on punctuation and pauses ≥ 0.3s, grow to 3 words rather than flash a cue < 0.35s (`chunk_words` in `render.py`), Helvetica 18 Bold (Nimbus Sans on Linux via fontconfig), white-on-outline, `MarginV=35`. `render.py` ships with this as `SUB_FORCE_STYLE`.
 
 ```
 FontName=Helvetica,FontSize=18,Bold=1,
@@ -244,7 +257,7 @@ def ease_in_out_cubic(t):
 - Background `(10, 10, 10)` near-black
 - Accent `#FF5A00` / `(255, 90, 0)` orange
 - Labels `(110, 110, 110)` dim gray
-- Font: Menlo Bold at `/System/Library/Fonts/Menlo.ttc` (index 1)
+- Font: Menlo Bold at `/System/Library/Fonts/Menlo.ttc` (index 1) on macOS; on Linux use DejaVu Sans Mono Bold at `/usr/share/fonts/truetype/dejavu/DejaVuSansMono-Bold.ttf` (see Platform notes)
 - ≤ 2 accent colors, ~40% empty space, minimal chrome
 - Result: terminal / retro tech feel
 

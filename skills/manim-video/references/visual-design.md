@@ -93,7 +93,7 @@ Large title text (font_size >= 48) with short strings (1-3 words) can use propor
 - **Linux**: DejaVu Sans Mono (pre-installed), Liberation Mono
 - **Cross-platform**: JetBrains Mono (install from jetbrains.com)
 
-`"Menlo"` is the safest default — pre-installed on macOS, and Linux systems fall back to DejaVu Sans Mono.
+`"Menlo"` is the default on macOS. On Linux, fontconfig does **not** map `"Menlo"` to a monospace face (Ubuntu 24.04 resolves it to Noto Sans), so pick per OS: `MONO = "Menlo" if sys.platform == "darwin" else "DejaVu Sans Mono"`.
 
 ### Fine-Grained Text Control
 

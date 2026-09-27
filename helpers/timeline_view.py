@@ -152,12 +152,23 @@ def find_silences(words: list[dict], start: float, end: float, threshold: float 
 
 
 FONT_CANDIDATES = [
+    # macOS
     "/System/Library/Fonts/Menlo.ttc",
     "/System/Library/Fonts/Helvetica.ttc",
     "/System/Library/Fonts/SFNSMono.ttf",
+    # Linux (Debian/Ubuntu paths)
     "/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf",
     "/usr/share/fonts/truetype/liberation/LiberationMono-Regular.ttf",
 ]
+
+
+def fontconfig_monospace() -> str | None:
+    """Other distros keep fonts elsewhere; ask fontconfig for any monospace face."""
+    try:
+        out = subprocess.run(["fc-match", "-f", "%{file}", "monospace"], capture_output=True, text=True)
+    except FileNotFoundError:
+        return None
+    return out.stdout.strip() or None
 
 
 def load_font(size: int) -> ImageFont.ImageFont:
@@ -167,6 +178,12 @@ def load_font(size: int) -> ImageFont.ImageFont:
                 return ImageFont.truetype(fp, size)
             except Exception:
                 continue
+    fp = fontconfig_monospace()
+    if fp:
+        try:
+            return ImageFont.truetype(fp, size)
+        except Exception:
+            pass
     return ImageFont.load_default()
 
 

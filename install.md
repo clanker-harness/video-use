@@ -11,7 +11,7 @@ Use this file only for first-time install or reconnect. For daily editing, read 
 
 You're setting up a conversation-driven video editor for the user. After install, the user drops raw footage into any folder, runs their agent (`claude`, `codex`, etc.) there, and says "edit these into a launch video." You do the rest by reading `SKILL.md`.
 
-Three things must exist on this machine:
+Three things must exist on the target machine (macOS or Linux):
 
 1. The `video-use` repo cloned somewhere stable.
 2. `ffmpeg` on `$PATH` (plus optional `yt-dlp` for online sources).
@@ -23,7 +23,7 @@ And one thing must be true about the current agent:
 
 ## Install prompt contract
 
-- Do everything yourself. Only ask the user for things you cannot generate — the ElevenLabs API key, and confirmation before `brew install`.
+- Do everything yourself. Only ask the user for things you cannot generate — the ElevenLabs API key, and confirmation before `brew install` (macOS) or any `sudo apt-get install` (Linux).
 - Prefer a stable clone path like `~/Developer/video-use` (not `/tmp`, not `~/Downloads`).
 - The skill references helpers by bare name (`transcribe.py`, `render.py`). That works because SKILL.md and `helpers/` ship together — keep them as siblings when you register the skill.
 - After install, verify by running one real command against one real file. Don't declare success on file-existence checks alone.
@@ -53,19 +53,22 @@ command -v uv >/dev/null && uv sync || pip install -e .
 `ffmpeg` and `ffprobe` are hard requirements. `yt-dlp` is only needed if the user wants to pull sources from URLs. Animation engines such as HyperFrames, Remotion, and Manim are installed lazily the first time a project actually needs them.
 
 ```bash
-# macOS
+# macOS (Homebrew)
 command -v ffmpeg >/dev/null || brew install ffmpeg
 command -v yt-dlp >/dev/null || brew install yt-dlp     # optional
 
-# Debian / Ubuntu
-# sudo apt-get update && sudo apt-get install -y ffmpeg
-# pip install yt-dlp
+# Debian / Ubuntu (needs sudo — ask first)
+# sudo apt-get update && sudo apt-get install -y ffmpeg fonts-dejavu-core
+command -v yt-dlp >/dev/null || uv tool install yt-dlp  # optional; system pip is PEP 668-blocked on Ubuntu 24.04
 
 # Arch
 # sudo pacman -S ffmpeg yt-dlp
+
+# Any OS: render.py burns captions with the libass `subtitles` filter, HDR sources need `zscale`
+ffmpeg -hide_banner -filters | grep -wE 'subtitles|zscale|loudnorm'
 ```
 
-If `brew` / `apt` / `pacman` requires a sudo prompt, tell the user the exact command and wait. Do not invent a password.
+If `brew` / `apt` / `pacman` requires a sudo prompt, tell the user the exact command and wait. Do not invent a password. If the `subtitles` filter is missing (a slim build), install a fuller build (`brew install ffmpeg-full` on macOS and put `$(brew --prefix ffmpeg-full)/bin` first on PATH; Ubuntu's apt `ffmpeg` already has it).
 
 ### 4. Register the skill with the current agent
 

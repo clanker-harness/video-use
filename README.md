@@ -60,8 +60,17 @@ ln -sfn ~/Developer/video-use ~/.claude/skills/video-use        # Claude Code
 # 2. Install deps
 cd ~/Developer/video-use
 uv sync                         # or: pip install -e .
+
+# macOS (Homebrew)
 brew install ffmpeg             # required
 brew install yt-dlp             # optional, for downloading online sources
+
+# Linux (Debian/Ubuntu)
+sudo apt-get install -y ffmpeg fonts-dejavu-core   # required (apt ffmpeg includes libass/zscale/loudnorm)
+uv tool install yt-dlp          # optional (system pip is blocked by PEP 668 on Ubuntu 24.04)
+
+# Either OS: captions need ffmpeg's `subtitles` filter (libass)
+ffmpeg -hide_banner -filters | grep -w subtitles
 
 # 3. Add your ElevenLabs API key
 cp .env.example .env
